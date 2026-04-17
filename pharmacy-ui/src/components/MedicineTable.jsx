@@ -1,45 +1,69 @@
 function MedicineTable({ data }) {
-  const getRowClass = (m) => {
+  const getStatus = (m) => {
     if (!m.expiryDate) return "";
 
     const expiry = new Date(m.expiryDate);
-
     const today = new Date();
 
-    if (isNaN(expiry)) return ""; // safety check
+    if (isNaN(expiry)) return "";
 
-    const diffTime = expiry.getTime() - today.getTime();
-    //console.log(expiry.getTime(), today.getTime());
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-    console.log(m.fullName, diffDays);
-    if (diffDays < 30) return "row-red";
-    if (m.quantity < 10) return "row-yellow";
-    //console.log(diffDays, diffTime);
-    return "";
+    const diffDays = Math.floor(
+      (expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
+    );
+
+    if (diffDays < 30) return "expiry";
+    if (m.quantity < 10) return "low";
+    return "ok";
+  };
+
+  const formatDate = (date) => {
+    const d = new Date(date);
+    if (isNaN(d)) return "";
+    return `${String(d.getDate()).padStart(2, "0")}-${String(
+      d.getMonth() + 1,
+    ).padStart(2, "0")}-${d.getFullYear()}`;
   };
 
   return (
-    <div className="table-container">
-      <table className="med-table">
+    <div className="table-card">
+      <table className="modern-table">
         <thead>
           <tr>
-            <th>Name</th>
+            <th>Medicine</th>
             <th>Expiry</th>
-            <th>Qty</th>
+            <th>Stock</th>
             <th>Price</th>
             <th>Brand</th>
+            <th>Status</th>
           </tr>
         </thead>
+
         <tbody>
-          {data.map((m) => (
-            <tr key={m.id} className={getRowClass(m)}>
-              <td>{m.fullName}</td>
-              <td>{m.expiryDate}</td>
-              <td>{m.quantity}</td>
-              <td>₹{m.price}</td>
-              <td>{m.brand}</td>
-            </tr>
-          ))}
+          {data.map((m) => {
+            const status = getStatus(m);
+
+            return (
+              <tr key={m.id}>
+                <td className="name">{m.fullName}</td>
+                <td>{formatDate(m.expiryDate)}</td>
+                <td>{m.quantity}</td>
+                <td>₹{m.price}</td>
+                <td>{m.brand}</td>
+
+                <td>
+                  {status === "expiry" && (
+                    <span className="badge red">Expiring Soon</span>
+                  )}
+                  {status === "low" && (
+                    <span className="badge yellow">Low Stock</span>
+                  )}
+                  {status === "ok" && (
+                    <span className="badge green">Healthy</span>
+                  )}
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>

@@ -1,15 +1,16 @@
 import { useEffect, useState } from "react";
-import { getMedicines } from "./api";
+import axios from "axios";
 import MedicineTable from "./components/MedicineTable";
-import AddMedicine from "./components/AddMedicine";
 import "./App.css";
+
+const API = "http://localhost:5000/api/medicine";
 
 function App() {
   const [medicines, setMedicines] = useState([]);
   const [search, setSearch] = useState("");
 
   const loadData = async () => {
-    const res = await getMedicines();
+    const res = await axios.get(API);
     setMedicines(res.data);
   };
 
@@ -17,9 +18,16 @@ function App() {
     loadData();
   }, []);
 
-  const filtered = medicines.filter((m) =>
-    m.fullName?.toLowerCase().includes(search.toLowerCase()),
-  );
+  const filtered = medicines.filter((m) => {
+    const term = search.toLowerCase();
+
+    return (
+      m.fullName?.toLowerCase().includes(term) ||
+      m.brand?.toLowerCase().includes(term) ||
+      m.quantity?.toString().includes(term) ||
+      m.price?.toString().includes(term)
+    );
+  });
 
   return (
     <div className="container">
@@ -27,7 +35,8 @@ function App() {
         <h2>Pharmacy Dashboard</h2>
 
         <input
-          placeholder="Search medicine..."
+          className="search-box"
+          placeholder="Search by name, brand, price, quantity..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
